@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Xiaomi 12 Lite (taoyao) for crDroid 16.0: the community trees, as a local manifest.
+  Goes to .repo/local_manifests/taoyao.xml (build_crdroid.sh init does that).
+
+  The set is the one Evolution X lists in its evolution.dependencies for taoyao (device, vendor and
+  firmware from lineage-23.2; hardware/xiaomi on bka-no-dsp; hardware/dolby on Dolby-Vision-2.0), the
+  only combination a released ROM is known to have been built from. The kernel is not here: the build
+  script puts your own repository in kernel/xiaomi/taoyao (it is not a repo project on purpose).
+
+  Every project is pinned to the commit the research looked at (revision = commit, upstream = branch it
+  lives on). To follow the branch instead, put the branch name in revision and drop upstream.
+  Names are owner/repository because the crdroid remote fetches from https://github.com/.
+-->
+<manifest>
+  <project path="device/xiaomi/taoyao" name="skglab-dev/device_xiaomi_taoyao" remote="crdroid"
+           revision="2d0e252d4353f5310f2b1867288743ff2165afd1" upstream="lineage-23.2" />
+  <project path="device/xiaomi/taoyao-camera" name="skglab-dev/device_xiaomi_taoyao-camera" remote="crdroid"
+           revision="db9b5e9900a882b25b807bcf5819a7f5bd5dff6e" upstream="lineage-23.2" />
+  <project path="vendor/xiaomi/taoyao" name="skglab-dev/vendor_xiaomi_taoyao" remote="crdroid"
+           revision="1bd905e6270e4da7b798c047d6688da0cc943515" upstream="lineage-23.2" />
+  <project path="vendor/xiaomi/taoyao-camera" name="skglab-dev/vendor_xiaomi_taoyao-camera" remote="crdroid"
+           revision="e4fec5aa06a4f5b31dce8ae0a060ebd2ac30068b" upstream="lineage-23.2" />
+  <!-- 17 firmware images in Git LFS (~296 MiB); they must be the ones already on the phone (OS1.0.39.0.ULIEUXM) -->
+  <project path="vendor/xiaomi/taoyao-firmware" name="skglab-dev/vendor_xiaomi_taoyao-firmware" remote="crdroid"
+           revision="3d62a6843b67ea74ad9cf36b33521ca9c84e33b4" upstream="lineage-23.2" />
+  <project path="hardware/xiaomi" name="Evolution-X-Devices/hardware_xiaomi" remote="crdroid"
+           revision="8193a2d82379dca5a74eea5c3ccc76f077e85c59" upstream="bka-no-dsp" />
+  <project path="hardware/dolby" name="swiitch-OFF-Lab/hardware_dolby" remote="crdroid"
+           revision="69b571078f3f04d79584bdfe990b6fffa1c6b388" upstream="Dolby-Vision-2.0" />
+</manifest>

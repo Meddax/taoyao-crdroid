@@ -1,0 +1,59 @@
+# taoyao_crdroid_defconfig.fragment
+#
+# Kernel defconfig fragment for crDroid 16.0 / taoyao (SM7325, kernel 5.4.x).
+#
+# HOW TO USE
+# ----------
+# This fragment is NOT applied separately; it documents what must be present in
+# arch/arm64/configs/taoyao_suki_defconfig (SukiSU-Ultra branch of
+# MeruHub/Mi-12-lite-kernel).  build_crdroid.sh:stage_kernel() already copies
+# taoyao_suki_defconfig -> taoyao_defconfig before the ROM build runs.
+#
+# To verify the actual defconfig satisfies all constraints below, run on the
+# build server (from $WORK/kernel/xiaomi/taoyao):
+#   grep -E 'CONFIG_(KSU|KSU_MANUAL_HOOK|MODULES|KPROBES|KSU_SUSFS|KPM)' \
+#       arch/arm64/configs/taoyao_defconfig
+#
+# MANDATORY flags (must be set exactly as shown — wrong values silently break builds)
+# -----------------------------------------------------------------------------------
+
+# SukiSU-Ultra kernel-side hook:
+CONFIG_KSU=y
+CONFIG_KSU_MANUAL_HOOK=y
+
+# Monolithic kernel: no loadable modules.
+# Combined with  BOARD_VENDOR_KERNEL_MODULES :=  in BoardConfig.mk this tells
+# the ROM build not to look for *.ko files and prevents "module not found" failures.
+CONFIG_MODULES=n
+
+# Kprobes disabled: required for the manual-hook build; also prevents crDroid's
+# live-kernel-patching infrastructure from conflicting with SukiSU.
+CONFIG_KPROBES=n
+
+# SUSFS and KPM must be OFF on the SukiSU builtin branch (they are only on
+# the ksu_susfs branch which we do not use).
+# CONFIG_KSU_SUSFS is not set
+# CONFIG_KPM is not set
+
+# OPTIONAL / tuning — set in taoyao_suki_defconfig for performance
+# -----------------------------------------------------------------
+# These are already present in the SukiSU branch; listed here as a checklist.
+
+# Schedutil governor (default; crDroid does not change governor policy)
+CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y
+
+# LZ4 for ramdisk — matches BOARD_RAMDISK_USE_LZ4 in BoardConfig.mk
+CONFIG_LZ4_COMPRESS=y
+CONFIG_LZ4_DECOMPRESS=y
+
+# F2FS for /data (Xiaomi stock and all LineageOS-family ROMs use it)
+CONFIG_F2FS_FS=y
+CONFIG_F2FS_FS_ENCRYPTION=y
+CONFIG_F2FS_FS_SECURITY=y
+
+# USB gadget — required for MeruLink / XHID; already in defconfig
+CONFIG_USB_CONFIGFS=y
+CONFIG_USB_CONFIGFS_F_HID=y
+
+# crDroid-specific: not setting any new option vs EvolutionX.
+# All ROM differentiation is done at the device-tree (mk) level, not in the kernel.
