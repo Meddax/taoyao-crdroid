@@ -1,0 +1,73 @@
+# system.prop.crdroid
+#
+# crDroid-specific system properties for Xiaomi 12 Lite (taoyao).
+#
+# DEPLOY: include from  device/xiaomi/taoyao/device.mk  with:
+#   PRODUCT_SYSTEM_PROPERTIES += \
+#       $(LOCAL_DIR)/system.prop.crdroid
+# OR reference inline in device.mk / lineage_taoyao.mk as needed.
+#
+# Most crDroid properties are injected automatically by
+#   vendor/lineage/config/common.mk
+#   vendor/lineage/config/version.mk
+# and do NOT need to be duplicated here.  Only device-specific overrides live here.
+
+# ---------------------------------------------------------------------------
+# Display — taoyao 6.55" AMOLED, 120 Hz (SM7325 / Adreno 642L)
+# ---------------------------------------------------------------------------
+
+# Peak refresh rate cap; crDroid Quick Settings tile reads this.
+ro.surface_flinger.max_frame_buffer_acquired_buffers=3
+
+# 120 Hz default for crDroid (EvolutionX sets its own value in vendor/evolution).
+# Leave commented to let crDroid's vendor/lineage defaults manage this.
+# ro.surface_flinger.set_display_power_timer_ms=1000
+
+# ---------------------------------------------------------------------------
+# Performance / battery
+# ---------------------------------------------------------------------------
+
+# Schedutil: crDroid does not ship a custom thermal profile for holi;
+# the kernel's onboard defaults are correct.  No prop override needed.
+
+# Disable dex2oat background compilation at first boot (crDroid does this via
+# common.mk; listed here as documentation only).
+# pm.dexopt.boot=verify
+# pm.dexopt.first-boot=quicken
+# pm.dexopt.install=speed-profile
+
+# ---------------------------------------------------------------------------
+# Google / GMS
+# ---------------------------------------------------------------------------
+
+# crDroid sets ro.lineage.build.type=UNOFFICIAL automatically; no override.
+# GMS client ID is set in lineage_taoyao.mk as PRODUCT_GMS_CLIENTID_BASE.
+
+# Safetynet / Play Integrity — crDroid ships its own spoof by default.
+# These values must match the bp4a release (Android 16 QPR0):
+ro.build.version.security_patch=2026-10-01
+
+# ---------------------------------------------------------------------------
+# MeruLink / USB-gadget (XHID)
+# ---------------------------------------------------------------------------
+
+# MeruLink HID gadget presents as Xbox controller + bulk channel.
+# The ROM sees a standard USB gadget; no ROM-side prop needed.
+# Actual gadget configuration is in the kernel (f_hid_xpad.c).
+
+# ---------------------------------------------------------------------------
+# Audio / Dolby
+# ---------------------------------------------------------------------------
+
+# hardware/dolby is in the manifest; Dolby Vision 2.0 on Holi.
+# crDroid picks it up automatically via hardware/dolby's Android.mk.
+# No extra prop needed beyond what the Dolby HAL sets.
+
+# ---------------------------------------------------------------------------
+# crDroid version record (auto-set by vendor/lineage/config/version.mk)
+# Listed here as a reference — do NOT set manually:
+#   ro.lineage.build.type    = UNOFFICIAL
+#   ro.lineage.build.version = 12.13   (crDroid 16.0, Android 16)
+#   ro.lineage.releasetype   = UNOFFICIAL
+#   ro.lineage.build.zip_type= VANILLA
+# ---------------------------------------------------------------------------

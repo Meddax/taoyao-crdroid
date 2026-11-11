@@ -1,0 +1,44 @@
+# system.prop.merulink
+#
+# MeruLink kernel integration properties for Xiaomi 12 Lite (taoyao).
+#
+# DEPLOY: include from device/xiaomi/taoyao/device.mk (or lineage_taoyao.mk) with:
+#   PRODUCT_SYSTEM_PROPERTIES += \
+#       $(LOCAL_DIR)/system.prop.merulink
+#
+# These properties are set at build time and appear in /system/build.prop on the device.
+
+# ---------------------------------------------------------------------------
+# MeruLink version identifier
+# ---------------------------------------------------------------------------
+
+# Kernel version of the MeruLink USB-gadget stack baked into this build.
+ro.merulink.version=3
+
+# 1 = this ROM was built with the MeruLink kernel (USB HID/bulk gadget active).
+ro.kernel.merulink=1
+
+# ---------------------------------------------------------------------------
+# Default USB gadget mode
+# ---------------------------------------------------------------------------
+
+# Boot into ADB mode by default.  The XHID switch (3-mode: ADB / Xbox / Charge)
+# is driven by the kernel userspace; persist.sys.usb.config is the Android
+# framework's initial hint read by adbd and init's usb_gadget scripts.
+#
+# Allowed values (comma-separated list):
+#   adb                  — ADB only (safe default for development)
+#   mtp,adb              — MTP + ADB (use for a production release)
+#   none                 — charge only
+#
+# Note: MeruLink/XHID can override the gadget configuration after boot
+# regardless of this property; it is a default, not a lock.
+persist.sys.usb.config=adb
+
+# ---------------------------------------------------------------------------
+# Debug / diagnostic helpers (optional; remove in a production user build)
+# ---------------------------------------------------------------------------
+
+# Suppress the "USB debugging connected" notification while kernel dev is active.
+# Comment this out for a user/release build.
+ro.adb.secure=0

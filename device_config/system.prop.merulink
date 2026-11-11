@@ -1,0 +1,51 @@
+# system.prop.merulink
+#
+# MeruLink / XHID USB gadget properties for Xiaomi 12 Lite (taoyao).
+#
+# DEPLOY: include from device/xiaomi/taoyao/device.mk with:
+#   PRODUCT_SYSTEM_PROPERTIES += \
+#       $(LOCAL_DIR)/system.prop.merulink
+#
+# MeruLink kernel implements a 3-mode USB gadget (ADB / Xbox HID / Charge).
+# Mode switching is done via /sys/kernel/xhid/mode — no ROM prop required.
+# These properties document the gadget identity presented to the host.
+
+# ---------------------------------------------------------------------------
+# USB gadget identity (XHID stealth mode: appears as Xbox Controller)
+# ---------------------------------------------------------------------------
+
+# Default USB composition at boot: ADB-only (safe default; mode switch via XHID)
+persist.vendor.usb.config=adb
+
+# Gadget manufacturer string (shown to host OS in ADB/charge modes)
+ro.vendor.usb.manufacturer=Xiaomi
+
+# Gadget product string (ADB mode — standard Android)
+ro.vendor.usb.product.adb=Xiaomi 12 Lite
+
+# Xbox controller identity (stealth/HID mode — set by XHID driver, not ROM)
+# VID=0x045E (Microsoft), PID=0x02EA (Xbox One controller)
+# Configured in f_hid_xpad.c — listed here for documentation only.
+# ro.vendor.usb.vid.xhid=045E
+# ro.vendor.usb.pid.xhid=02EA
+
+# ---------------------------------------------------------------------------
+# MeruLink bulk channel (data pipe alongside HID)
+# ---------------------------------------------------------------------------
+
+# Bulk interface is a custom vendor class — no Android USB framework involved.
+# xhid_channel.h defines the protocol; no ROM props needed.
+
+# ---------------------------------------------------------------------------
+# KSU / SukiSU-Ultra
+# ---------------------------------------------------------------------------
+
+# KernelSU app detects root via /dev/ksud; no ROM prop needed.
+# SUSFS (filesystem stealth) is disabled by default in MeruLink config.
+# ro.boot.ksu=0 is not set — KSU presence/absence detected at runtime.
+
+# ---------------------------------------------------------------------------
+# MeruLink version record (informational)
+# ---------------------------------------------------------------------------
+ro.merulink.version=3
+ro.merulink.kernel=MeruLink-v3-SukiSU-XHID

@@ -23,6 +23,13 @@
 #
 # The kernel is always built with:
 #   WITH_KSU=1  WITH_USB_CHANNEL=1  WITH_XHID_STEALTH=1  TOOLCHAIN=llvm-apt
+#
+# Extra settings:
+#   USE_PREBUILT    1 = skip the build, take the already-built Image from OUT_WIN/kernel/
+#                   0 = build from source (default)
+#   PREBUILT_DST    WSL path to device/xiaomi/taoyao/prebuilt/ inside the crDroid tree
+#                   default: $HOME/crdroid/device/xiaomi/taoyao/prebuilt
+#                   Set to empty to skip the copy step.
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
@@ -32,6 +39,8 @@ WORK=${WORK:-$HOME/taoyao-kernel-crdroid}
 OUT_WIN=${OUT_WIN:-/mnt/d/MeruDevTools/ROM_BUILD/crdroid/out}
 CRDROID_BOOT=${CRDROID_BOOT:-/mnt/d/MeruDevTools/ROM_BUILD/kernel/crdroid_files/boot.img}
 MAGISKBOOT=${MAGISKBOOT:-}
+USE_PREBUILT=${USE_PREBUILT:-0}
+PREBUILT_DST=${PREBUILT_DST:-$HOME/crdroid/device/xiaomi/taoyao/prebuilt}
 
 WIN_KERNEL=/mnt/d/MeruDevTools/ROM_BUILD/kernel
 
@@ -68,6 +77,14 @@ find_magiskboot() {
 }
 
 stage_build() {
+    if [ "$USE_PREBUILT" = "1" ]; then
+        log "USE_PREBUILT=1: skipping kernel compilation, using existing Image from $OUT_WIN/kernel/"
+        local image
+        image=$(ls -t "$OUT_WIN"/kernel/Image-ksu* 2>/dev/null | head -1 || true)
+        [ -f "$image" ] || die "USE_PREBUILT=1 but no Image-ksu* found in $OUT_WIN/kernel/. Run without USE_PREBUILT first."
+        log "prebuilt Image: $image"
+        return 0
+    fi
     log "kernel build (crDroid — MeruLink: KSU + USB channel + XHID stealth)"
     [ -f "$BUILD_SH" ] || die "kernel build script not found: $BUILD_SH"
     # run source, config, build, package
@@ -76,6 +93,37 @@ stage_build() {
     bash "$BUILD_SH" build
     bash "$BUILD_SH" package
     log "kernel build done"
+}
+
+# Copy the built Image into the device tree's prebuilt directory so the crDroid
+# ROM build can consume it as TARGET_PREBUILT_KERNEL instead of building its own.
+stage_copy_prebuilt() {
+    [ -n "$PREBUILT_DST" ] || { log "PREBUILT_DST is empty, skipping copy to device tree"; return 0; }
+    log "copy Image -> $PREBUILT_DST"
+
+    local image
+    if [ "$USE_PREBUILT" = "1" ]; then
+        image=$(ls -t "$OUT_WIN"/kernel/Image-ksu* 2>/dev/null | head -1 || true)
+    else
+        local tag=ksu
+        [ "$WITH_USB_CHANNEL" = 1 ] && tag=${tag}-xhid
+        local kref
+        kref=$(git -C "$WORK/src" rev-parse HEAD 2>/dev/null | cut -c1-7 || echo "unknown")
+        image=$OUT_WIN/kernel/Image-${tag}-${kref}-${TOOLCHAIN}
+        [ -f "$image" ] || image=$(ls -t "$OUT_WIN"/kernel/Image-ksu* 2>/dev/null | head -1 || true)
+    fi
+    [ -f "$image" ] || die "kernel Image not found in $OUT_WIN/kernel/. Run the build stage first."
+
+    mkdir -p "$PREBUILT_DST"
+    cp "$image" "$PREBUILT_DST/Image"
+    # Many device trees also want Image.gz; create it alongside
+    if command -v gzip > /dev/null 2>&1; then
+        gzip -9 -k -f "$image"
+        local imgz=${image}.gz
+        [ -f "$imgz" ] && cp "$imgz" "$PREBUILT_DST/Image.gz" || true
+    fi
+    log "Image copied to $PREBUILT_DST/Image"
+    ls -lh "$PREBUILT_DST"/Image*
 }
 
 stage_boot() {
@@ -130,16 +178,21 @@ stage_boot() {
 case ${1:-all} in
     all)
         stage_build
+        stage_copy_prebuilt
         stage_boot
         ;;
     build)
         stage_build
+        stage_copy_prebuilt
         ;;
     boot)
         stage_boot
         ;;
+    prebuilt)
+        stage_copy_prebuilt
+        ;;
     *)
-        sed -n '2,20p' "$0"
+        sed -n '2,30p' "$0"
         exit 1
         ;;
 esac
